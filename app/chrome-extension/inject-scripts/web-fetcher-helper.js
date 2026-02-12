@@ -2686,6 +2686,8 @@ if (window.__WEB_FETCHER_HELPER_INITIALIZED__) {
     else if (request.action === 'getHtmlContent') {
       try {
         let rawHtml;
+        // Default replaceSvg to true if not specified
+        const replaceSvg = request.replaceSvg !== false;
 
         // If selector is specified, only get content from the matching element
         if (request.selector) {
@@ -2700,7 +2702,7 @@ if (window.__WEB_FETCHER_HELPER_INITIALIZED__) {
           rawHtml = document.documentElement.outerHTML;
         }
 
-        const cleanedHtml = cleanHtmlContent(rawHtml);
+        const cleanedHtml = cleanHtmlContent(rawHtml, replaceSvg);
 
         sendResponse({
           success: true,
@@ -2933,9 +2935,10 @@ if (window.__WEB_FETCHER_HELPER_INITIALIZED__) {
   /**
    * Clean HTML content by removing style tags and their content
    * @param {string} html - The HTML content to clean
+   * @param {boolean} replaceSvg - Whether to replace SVG elements with placeholders (default: true)
    * @returns {string} - Cleaned HTML content
    */
-  function cleanHtmlContent(html) {
+  function cleanHtmlContent(html, replaceSvg = true) {
     // Create a new document parser
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
@@ -2970,38 +2973,40 @@ if (window.__WEB_FETCHER_HELPER_INITIALIZED__) {
       }
     });
 
-    // Replace all SVG elements with placeholders
-    const svgElements = doc.querySelectorAll('svg');
-    svgElements.forEach((element) => {
-      if (element.parentNode) {
-        // Create a placeholder element
-        const placeholder = doc.createElement('span');
-        placeholder.textContent = '[SVG Icon]';
-        placeholder.setAttribute('data-placeholder', 'svg-icon');
+    // Replace all SVG elements with placeholders (only if replaceSvg is true)
+    if (replaceSvg) {
+      const svgElements = doc.querySelectorAll('svg');
+      svgElements.forEach((element) => {
+        if (element.parentNode) {
+          // Create a placeholder element
+          const placeholder = doc.createElement('span');
+          placeholder.textContent = '[SVG Icon]';
+          placeholder.setAttribute('data-placeholder', 'svg-icon');
 
-        // Replace SVG element
-        element.parentNode.replaceChild(placeholder, element);
-      }
-    });
-
-    // Replace all SVG images and objects
-    const svgImages = doc.querySelectorAll(
-      'img[src$=".svg"], object[data$=".svg"], embed[src$=".svg"]',
-    );
-    svgImages.forEach((element) => {
-      if (element.parentNode) {
-        // Create a placeholder element
-        const placeholder = doc.createElement('span');
-        placeholder.textContent = '[SVG Image]';
-        placeholder.setAttribute('data-placeholder', 'svg-image');
-        if (element.alt) {
-          placeholder.textContent = `[SVG Image: ${element.alt}]`;
+          // Replace SVG element
+          element.parentNode.replaceChild(placeholder, element);
         }
+      });
 
-        // Replace SVG image element
-        element.parentNode.replaceChild(placeholder, element);
-      }
-    });
+      // Replace all SVG images and objects
+      const svgImages = doc.querySelectorAll(
+        'img[src$=".svg"], object[data$=".svg"], embed[src$=".svg"]',
+      );
+      svgImages.forEach((element) => {
+        if (element.parentNode) {
+          // Create a placeholder element
+          const placeholder = doc.createElement('span');
+          placeholder.textContent = '[SVG Image]';
+          placeholder.setAttribute('data-placeholder', 'svg-image');
+          if (element.alt) {
+            placeholder.textContent = `[SVG Image: ${element.alt}]`;
+          }
+
+          // Replace SVG image element
+          element.parentNode.replaceChild(placeholder, element);
+        }
+      });
+    }
 
     // Remove elements with only data-* attributes, no children, and no class or style
     const allElements = Array.from(doc.querySelectorAll('*'));

@@ -557,6 +557,11 @@ export const TOOL_SCHEMAS: Tool[] = [
           description:
             'CSS selector to get content from a specific element. If provided, only content from this element will be returned',
         },
+        replaceSvg: {
+          type: 'boolean',
+          description:
+            'Replace SVG elements with placeholder text [SVG Icon] in HTML content. Only applies when htmlContent is true (default: true)',
+        },
       },
       required: [],
     },

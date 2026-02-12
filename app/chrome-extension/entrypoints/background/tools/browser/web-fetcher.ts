@@ -11,6 +11,7 @@ interface WebFetcherToolParams {
   tabId?: number; // target existing tab id
   background?: boolean; // do not activate/focus
   windowId?: number; // target window id to pick active tab or create tab
+  replaceSvg?: boolean; // replace SVG elements with placeholder text. default: true
 }
 
 class WebFetcherTool extends BaseBrowserToolExecutor {
@@ -28,6 +29,7 @@ class WebFetcherTool extends BaseBrowserToolExecutor {
     const explicitTabId = args.tabId;
     const background = args.background === true;
     const windowId = args.windowId;
+    const replaceSvg = args.replaceSvg !== false; // Default is true
 
     console.log(`Starting web fetcher with options:`, {
       htmlContent,
@@ -104,6 +106,7 @@ class WebFetcherTool extends BaseBrowserToolExecutor {
         const htmlResponse = await this.sendMessageToTab(tab.id, {
           action: TOOL_MESSAGE_TYPES.WEB_FETCHER_GET_HTML_CONTENT,
           selector: selector,
+          replaceSvg: replaceSvg,
         });
 
         if (htmlResponse.success) {
