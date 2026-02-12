@@ -2702,7 +2702,7 @@ if (window.__WEB_FETCHER_HELPER_INITIALIZED__) {
           rawHtml = document.documentElement.outerHTML;
         }
 
-        const cleanedHtml = cleanHtmlContent(rawHtml, replaceSvg);
+        const cleanedHtml = cleanHtmlContent(rawHtml, replaceSvg, Boolean(request.selector));
 
         sendResponse({
           success: true,
@@ -2938,13 +2938,14 @@ if (window.__WEB_FETCHER_HELPER_INITIALIZED__) {
    * @param {boolean} replaceSvg - Whether to replace SVG elements with placeholders (default: true)
    * @returns {string} - Cleaned HTML content
    */
-  function cleanHtmlContent(html, replaceSvg = true) {
+  function cleanHtmlContent(html, replaceSvg = true, treatAsFragment = false) {
     // Create a new document parser
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
+    const root = treatAsFragment ? doc.body : doc;
 
     // Remove all style tags
-    const styleElements = doc.querySelectorAll('style');
+    const styleElements = root.querySelectorAll('style');
     styleElements.forEach((element) => {
       if (element.parentNode) {
         element.parentNode.removeChild(element);
@@ -2952,13 +2953,13 @@ if (window.__WEB_FETCHER_HELPER_INITIALIZED__) {
     });
 
     // Remove all inline style attributes
-    const allElementsWithStyle = doc.querySelectorAll('*');
+    const allElementsWithStyle = root.querySelectorAll('*');
     allElementsWithStyle.forEach((element) => {
       element.removeAttribute('style');
     });
 
     // Remove all link tags
-    const linkElements = doc.querySelectorAll('link');
+    const linkElements = root.querySelectorAll('link');
     linkElements.forEach((element) => {
       if (element.parentNode) {
         element.parentNode.removeChild(element);
@@ -2966,7 +2967,7 @@ if (window.__WEB_FETCHER_HELPER_INITIALIZED__) {
     });
 
     // Remove all script tags
-    const scriptElements = doc.querySelectorAll('script');
+    const scriptElements = root.querySelectorAll('script');
     scriptElements.forEach((element) => {
       if (element.parentNode) {
         element.parentNode.removeChild(element);
@@ -2975,7 +2976,7 @@ if (window.__WEB_FETCHER_HELPER_INITIALIZED__) {
 
     // Replace all SVG elements with placeholders (only if replaceSvg is true)
     if (replaceSvg) {
-      const svgElements = doc.querySelectorAll('svg');
+      const svgElements = root.querySelectorAll('svg');
       svgElements.forEach((element) => {
         if (element.parentNode) {
           // Create a placeholder element
@@ -2989,7 +2990,7 @@ if (window.__WEB_FETCHER_HELPER_INITIALIZED__) {
       });
 
       // Replace all SVG images and objects
-      const svgImages = doc.querySelectorAll(
+      const svgImages = root.querySelectorAll(
         'img[src$=".svg"], object[data$=".svg"], embed[src$=".svg"]',
       );
       svgImages.forEach((element) => {
@@ -3009,7 +3010,7 @@ if (window.__WEB_FETCHER_HELPER_INITIALIZED__) {
     }
 
     // Remove elements with only data-* attributes, no children, and no class or style
-    const allElements = Array.from(doc.querySelectorAll('*'));
+    const allElements = Array.from(root.querySelectorAll('*'));
     allElements.forEach((element) => {
       // Check if element has only data-* attributes
       let hasOnlyDataAttributes = true;
@@ -3055,10 +3056,10 @@ if (window.__WEB_FETCHER_HELPER_INITIALIZED__) {
         }
       }
     };
-    removeComments(doc);
+    removeComments(root);
 
     // Return cleaned HTML
-    return new XMLSerializer().serializeToString(doc);
+    return treatAsFragment ? root.innerHTML.trim() : new XMLSerializer().serializeToString(doc);
   }
 
   // Interactive elements feature has been removed
