@@ -9,8 +9,8 @@ export const getMcpServer = () => {
   }
   mcpServer = new Server(
     {
-      name: 'ChromeMcpServer',
-      version: '1.0.0',
+      name: 'H88ChromeMcpServer',
+      version: '1.0.1',
     },
     {
       capabilities: {

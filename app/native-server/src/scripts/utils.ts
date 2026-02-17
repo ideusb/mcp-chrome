@@ -14,25 +14,25 @@ export const writeFile = promisify(fs.writeFile);
  * Get the log directory path for wrapper scripts.
  * Uses platform-appropriate user directories to avoid permission issues.
  *
- * - macOS: ~/Library/Logs/mcp-chrome-bridge
- * - Windows: %LOCALAPPDATA%/mcp-chrome-bridge/logs
- * - Linux: $XDG_STATE_HOME/mcp-chrome-bridge/logs or ~/.local/state/mcp-chrome-bridge/logs
+ * - macOS: ~/Library/Logs/h88-chrome-mcp-bridge
+ * - Windows: %LOCALAPPDATA%/h88-chrome-mcp-bridge/logs
+ * - Linux: $XDG_STATE_HOME/h88-chrome-mcp-bridge/logs or ~/.local/state/h88-chrome-mcp-bridge/logs
  */
 export function getLogDir(): string {
   const homedir = os.homedir();
 
   if (os.platform() === 'darwin') {
-    return path.join(homedir, 'Library', 'Logs', 'mcp-chrome-bridge');
+    return path.join(homedir, 'Library', 'Logs', 'h88-chrome-mcp-bridge');
   } else if (os.platform() === 'win32') {
     return path.join(
       process.env.LOCALAPPDATA || path.join(homedir, 'AppData', 'Local'),
-      'mcp-chrome-bridge',
+      'h88-chrome-mcp-bridge',
       'logs',
     );
   } else {
     // Linux: XDG_STATE_HOME or ~/.local/state
     const xdgState = process.env.XDG_STATE_HOME || path.join(homedir, '.local', 'state');
-    return path.join(xdgState, 'mcp-chrome-bridge', 'logs');
+    return path.join(xdgState, 'h88-chrome-mcp-bridge', 'logs');
   }
 }
 
@@ -312,7 +312,10 @@ export async function tryRegisterUserLevelHost(targetBrowsers?: BrowserType[]): 
       // 如果没有检测到浏览器，默认注册Chrome、Chromium和Edge
       browsersToRegister.push(BrowserType.CHROME, BrowserType.CHROMIUM, BrowserType.EDGE);
       console.log(
-        colorText('No browsers detected, registering for Chrome, Chromium and Edge by default', 'yellow'),
+        colorText(
+          'No browsers detected, registering for Chrome, Chromium and Edge by default',
+          'yellow',
+        ),
       );
     } else {
       console.log(colorText(`Detected browsers: ${browsersToRegister.join(', ')}`, 'blue'));

@@ -56,12 +56,12 @@ Chrome MCP Server 是一个基于chrome插件的 **模型上下文协议 (MCP) �
 
 下载地址：https://github.com/hangwin/mcp-chrome/releases
 
-2. **全局安装mcp-chrome-bridge**
+2. **全局安装h88-chrome-mcp-bridge**
 
 npm
 
 ```bash
-npm install -g mcp-chrome-bridge
+npm install -g h88-chrome-mcp-bridge
 ```
 
 pnpm
@@ -69,11 +69,11 @@ pnpm
 ```bash
 # 方法1：全局启用脚本（推荐）
 pnpm config set enable-pre-post-scripts true
-pnpm install -g mcp-chrome-bridge
+pnpm install -g h88-chrome-mcp-bridge
 
 # 方法2：如果 postinstall 没有运行，手动注册
-pnpm install -g mcp-chrome-bridge
-mcp-chrome-bridge register
+pnpm install -g h88-chrome-mcp-bridge
+h88-chrome-mcp-bridge register
 ```
 
 > 注意：pnpm v7+ 默认禁用 postinstall 脚本以提高安全性。`enable-pre-post-scripts` 设置控制是否运行 pre/post 安装脚本。如果自动注册失败，请使用上述手动注册命令。
@@ -96,7 +96,7 @@ mcp-chrome-bridge register
 ```json
 {
   "mcpServers": {
-    "chrome-mcp-server": {
+    "h88-chrome-mcp-server": {
       "type": "streamableHttp",
       "url": "http://127.0.0.1:12306/mcp"
     }
@@ -112,13 +112,13 @@ mcp-chrome-bridge register
 
 ```sh
 # npm 查看方式
-npm list -g mcp-chrome-bridge
+npm list -g h88-chrome-mcp-bridge
 # pnpm 查看方式
-pnpm list -g mcp-chrome-bridge
+pnpm list -g h88-chrome-mcp-bridge
 ```
 
 假设上面的命令输出的路径是：/Users/xxx/Library/pnpm/global/5
-那么你的最终路径就是：/Users/xxx/Library/pnpm/global/5/node_modules/mcp-chrome-bridge/dist/mcp/mcp-server-stdio.js
+那么你的最终路径就是：/Users/xxx/Library/pnpm/global/5/node_modules/h88-chrome-mcp-bridge/dist/mcp/mcp-server-stdio.js
 
 2. 把下面的配置替换成你刚刚得到的最终路径
 
@@ -129,7 +129,7 @@ pnpm list -g mcp-chrome-bridge
       "command": "npx",
       "args": [
         "node",
-        "/Users/xxx/Library/pnpm/global/5/node_modules/mcp-chrome-bridge/dist/mcp/mcp-server-stdio.js"
+        "/Users/xxx/Library/pnpm/global/5/node_modules/h88-chrome-mcp-bridge/dist/mcp/mcp-server-stdio.js"
       ]
     }
   }
@@ -308,5 +308,12 @@ https://github.com/user-attachments/assets/83de4008-bb7e-494d-9b0f-98325cfea592
 ![IMG_6296](https://github.com/user-attachments/assets/ecd2e084-24d2-4038-b75f-3ab020b55594)
 
 # Hrg
-## 本地编译：
+
+## chrome/edge扩展本地编译：
+
 .\build-extension.ps1 -zip
+
+## npm编译发布：
+
+先登录 npm 官方源：npm login --registry https://registry.npmjs.org
+再运行发布脚本：publish-npm.ps1

@@ -1,333 +1,333 @@
-# Chrome MCP Bridge 安装指南
+﻿# Chrome MCP Bridge 瀹夎鎸囧崡
 
-本文档详细说明了 Chrome MCP Bridge 的安装和注册流程。
+鏈枃妗ｈ缁嗚鏄庝簡 Chrome MCP Bridge 鐨勫畨瑁呭拰娉ㄥ唽娴佺▼銆?
 
-## 安装流程概述
+## 瀹夎娴佺▼姒傝堪
 
-Chrome MCP Bridge 的安装和注册流程如下：
+Chrome MCP Bridge 鐨勫畨瑁呭拰娉ㄥ唽娴佺▼濡備笅锛?
 
 ```
-npm install -g mcp-chrome-bridge
-└─ postinstall.js
-   ├─ 复制可执行文件到 npm_prefix/bin   ← 总是可写（用户或root权限）
-   ├─ 尝试用户级别注册                  ← 无需sudo，大多数情况下成功
-   └─ 如果失败 ➜ 提示用户运行 mcp-chrome-bridge register --system
-      └─ 需要手动使用管理员权限运行
+npm install -g h88-chrome-mcp-bridge
+鈹斺攢 postinstall.js
+   鈹溾攢 澶嶅埗鍙墽琛屾枃浠跺埌 npm_prefix/bin   鈫?鎬绘槸鍙啓锛堢敤鎴锋垨root鏉冮檺锛?
+   鈹溾攢 灏濊瘯鐢ㄦ埛绾у埆娉ㄥ唽                  鈫?鏃犻渶sudo锛屽ぇ澶氭暟鎯呭喌涓嬫垚鍔?
+   鈹斺攢 濡傛灉澶辫触 鉃?鎻愮ず鐢ㄦ埛杩愯 h88-chrome-mcp-bridge register --system
+      鈹斺攢 闇€瑕佹墜鍔ㄤ娇鐢ㄧ鐞嗗憳鏉冮檺杩愯
 ```
 
-上面的流程图展示了从全局安装开始，到最终完成注册的完整过程。
+涓婇潰鐨勬祦绋嬪浘灞曠ず浜嗕粠鍏ㄥ眬瀹夎寮€濮嬶紝鍒版渶缁堝畬鎴愭敞鍐岀殑瀹屾暣杩囩▼銆?
 
-## 详细安装步骤
+## 璇︾粏瀹夎姝ラ
 
-### 1. 全局安装
+### 1. 鍏ㄥ眬瀹夎
 
 ```bash
-npm install -g mcp-chrome-bridge
+npm install -g h88-chrome-mcp-bridge
 ```
 
-安装完成后，系统会自动尝试在用户目录中注册 Native Messaging 主机。这不需要管理员权限，是推荐的安装方式。
+瀹夎瀹屾垚鍚庯紝绯荤粺浼氳嚜鍔ㄥ皾璇曞湪鐢ㄦ埛鐩綍涓敞鍐?Native Messaging 涓绘満銆傝繖涓嶉渶瑕佺鐞嗗憳鏉冮檺锛屾槸鎺ㄨ崘鐨勫畨瑁呮柟寮忋€?
 
-### 2. 用户级别注册
+### 2. 鐢ㄦ埛绾у埆娉ㄥ唽
 
-用户级别注册会在以下位置创建清单文件：
+鐢ㄦ埛绾у埆娉ㄥ唽浼氬湪浠ヤ笅浣嶇疆鍒涘缓娓呭崟鏂囦欢锛?
 
 ```
-清单文件位置
-├─ 用户级别（无需管理员权限）
-│  ├─ Windows: %APPDATA%\Google\Chrome\NativeMessagingHosts\
-│  ├─ macOS:   ~/Library/Application Support/Google/Chrome/NativeMessagingHosts/
-│  └─ Linux:   ~/.config/google-chrome/NativeMessagingHosts/
-│
-└─ 系统级别（需要管理员权限）
-   ├─ Windows: %ProgramFiles%\Google\Chrome\NativeMessagingHosts\
-   ├─ macOS:   /Library/Google/Chrome/NativeMessagingHosts/
-   └─ Linux:   /etc/opt/chrome/native-messaging-hosts/
+娓呭崟鏂囦欢浣嶇疆
+鈹溾攢 鐢ㄦ埛绾у埆锛堟棤闇€绠＄悊鍛樻潈闄愶級
+鈹? 鈹溾攢 Windows: %APPDATA%\Google\Chrome\NativeMessagingHosts\
+鈹? 鈹溾攢 macOS:   ~/Library/Application Support/Google/Chrome/NativeMessagingHosts/
+鈹? 鈹斺攢 Linux:   ~/.config/google-chrome/NativeMessagingHosts/
+鈹?
+鈹斺攢 绯荤粺绾у埆锛堥渶瑕佺鐞嗗憳鏉冮檺锛?
+   鈹溾攢 Windows: %ProgramFiles%\Google\Chrome\NativeMessagingHosts\
+   鈹溾攢 macOS:   /Library/Google/Chrome/NativeMessagingHosts/
+   鈹斺攢 Linux:   /etc/opt/chrome/native-messaging-hosts/
 ```
 
-如果自动注册失败，或者您想手动注册，可以运行：
+濡傛灉鑷姩娉ㄥ唽澶辫触锛屾垨鑰呮偍鎯虫墜鍔ㄦ敞鍐岋紝鍙互杩愯锛?
 
 ```bash
-mcp-chrome-bridge register
+h88-chrome-mcp-bridge register
 ```
 
-**推荐：运行诊断工具检查问题：**
+**鎺ㄨ崘锛氳繍琛岃瘖鏂伐鍏锋鏌ラ棶棰橈細**
 
 ```bash
-mcp-chrome-bridge doctor
+h88-chrome-mcp-bridge doctor
 ```
 
-### 3. 系统级别注册
+### 3. 绯荤粺绾у埆娉ㄥ唽
 
-如果用户级别注册失败（例如，由于权限问题），您可以尝试系统级别注册。系统级别注册需要管理员权限，但我们提供了两种便捷的方式来完成这一过程。
+濡傛灉鐢ㄦ埛绾у埆娉ㄥ唽澶辫触锛堜緥濡傦紝鐢变簬鏉冮檺闂锛夛紝鎮ㄥ彲浠ュ皾璇曠郴缁熺骇鍒敞鍐屻€傜郴缁熺骇鍒敞鍐岄渶瑕佺鐞嗗憳鏉冮檺锛屼絾鎴戜滑鎻愪緵浜嗕袱绉嶄究鎹风殑鏂瑰紡鏉ュ畬鎴愯繖涓€杩囩▼銆?
 
-系统级别注册有两种方式：
+绯荤粺绾у埆娉ㄥ唽鏈変袱绉嶆柟寮忥細
 
-#### 方式一：使用 `--system` 参数（推荐）
+#### 鏂瑰紡涓€锛氫娇鐢?`--system` 鍙傛暟锛堟帹鑽愶級
 
 ```bash
 # macOS/Linux
-sudo mcp-chrome-bridge register --system
+sudo h88-chrome-mcp-bridge register --system
 
-# Windows (以管理员身份运行命令提示符)
-mcp-chrome-bridge register --system
+# Windows (浠ョ鐞嗗憳韬唤杩愯鍛戒护鎻愮ず绗?
+h88-chrome-mcp-bridge register --system
 ```
 
-系统级安装需要管理员权限才能写入系统目录和注册表。
+绯荤粺绾у畨瑁呴渶瑕佺鐞嗗憳鏉冮檺鎵嶈兘鍐欏叆绯荤粺鐩綍鍜屾敞鍐岃〃銆?
 
-#### 方式二：直接使用管理员权限
+#### 鏂瑰紡浜岋細鐩存帴浣跨敤绠＄悊鍛樻潈闄?
 
-**Windows**：
-以管理员身份运行命令提示符或 PowerShell，然后执行：
-
-```
-mcp-chrome-bridge register
-```
-
-**macOS/Linux**：
-使用 sudo 命令：
+**Windows**锛?
+浠ョ鐞嗗憳韬唤杩愯鍛戒护鎻愮ず绗︽垨 PowerShell锛岀劧鍚庢墽琛岋細
 
 ```
-sudo mcp-chrome-bridge register
+h88-chrome-mcp-bridge register
 ```
 
-## 注册流程详解
-
-### 注册流程图
+**macOS/Linux**锛?
+浣跨敤 sudo 鍛戒护锛?
 
 ```
-注册流程
-├─ 用户级别注册 (mcp-chrome-bridge register)
-│  ├─ 获取用户级别清单路径
-│  ├─ 创建用户目录
-│  ├─ 生成清单内容
-│  ├─ 写入清单文件
-│  └─ Windows平台：创建用户级注册表项
-│
-└─ 系统级别注册 (mcp-chrome-bridge register --system)
-   ├─ 检查是否有管理员权限
-   │  ├─ 有权限 → 直接创建系统目录和写入清单
-   │  └─ 无权限 → 提示用户使用管理员权限运行
-   └─ Windows平台：创建系统级注册表项
+sudo h88-chrome-mcp-bridge register
 ```
 
-### 清单文件结构
+## 娉ㄥ唽娴佺▼璇﹁В
+
+### 娉ㄥ唽娴佺▼鍥?
+
+```
+娉ㄥ唽娴佺▼
+鈹溾攢 鐢ㄦ埛绾у埆娉ㄥ唽 (h88-chrome-mcp-bridge register)
+鈹? 鈹溾攢 鑾峰彇鐢ㄦ埛绾у埆娓呭崟璺緞
+鈹? 鈹溾攢 鍒涘缓鐢ㄦ埛鐩綍
+鈹? 鈹溾攢 鐢熸垚娓呭崟鍐呭
+鈹? 鈹溾攢 鍐欏叆娓呭崟鏂囦欢
+鈹? 鈹斺攢 Windows骞冲彴锛氬垱寤虹敤鎴风骇娉ㄥ唽琛ㄩ」
+鈹?
+鈹斺攢 绯荤粺绾у埆娉ㄥ唽 (h88-chrome-mcp-bridge register --system)
+   鈹溾攢 妫€鏌ユ槸鍚︽湁绠＄悊鍛樻潈闄?
+   鈹? 鈹溾攢 鏈夋潈闄?鈫?鐩存帴鍒涘缓绯荤粺鐩綍鍜屽啓鍏ユ竻鍗?
+   鈹? 鈹斺攢 鏃犳潈闄?鈫?鎻愮ず鐢ㄦ埛浣跨敤绠＄悊鍛樻潈闄愯繍琛?
+   鈹斺攢 Windows骞冲彴锛氬垱寤虹郴缁熺骇娉ㄥ唽琛ㄩ」
+```
+
+### 娓呭崟鏂囦欢缁撴瀯
 
 ```
 manifest.json
-├─ name: "com.chromemcp.nativehost"
-├─ description: "Node.js Host for Browser Bridge Extension"
-├─ path: "/path/to/run_host.sh"       ← 启动脚本路径
-├─ type: "stdio"                      ← 通信类型
-└─ allowed_origins: [                 ← 允许连接的扩展
-   "chrome-extension://扩展ID/"
+鈹溾攢 name: "com.chromemcp.nativehost"
+鈹溾攢 description: "Node.js Host for Browser Bridge Extension"
+鈹溾攢 path: "/path/to/run_host.sh"       鈫?鍚姩鑴氭湰璺緞
+鈹溾攢 type: "stdio"                      鈫?閫氫俊绫诲瀷
+鈹斺攢 allowed_origins: [                 鈫?鍏佽杩炴帴鐨勬墿灞?
+   "chrome-extension://鎵╁睍ID/"
 ]
 ```
 
-### 用户级别注册流程
+### 鐢ㄦ埛绾у埆娉ㄥ唽娴佺▼
 
-1. 确定用户级别清单文件路径
-2. 创建必要的目录
-3. 生成清单内容，包括：
-   - 主机名称
-   - 描述
-   - Node.js 可执行文件路径
-   - 通信类型（stdio）
-   - 允许的扩展 ID
-   - 启动参数
-4. 写入清单文件
-5. 在 Windows 上，还会创建相应的注册表项
+1. 纭畾鐢ㄦ埛绾у埆娓呭崟鏂囦欢璺緞
+2. 鍒涘缓蹇呰鐨勭洰褰?
+3. 鐢熸垚娓呭崟鍐呭锛屽寘鎷細
+   - 涓绘満鍚嶇О
+   - 鎻忚堪
+   - Node.js 鍙墽琛屾枃浠惰矾寰?
+   - 閫氫俊绫诲瀷锛坰tdio锛?
+   - 鍏佽鐨勬墿灞?ID
+   - 鍚姩鍙傛暟
+4. 鍐欏叆娓呭崟鏂囦欢
+5. 鍦?Windows 涓婏紝杩樹細鍒涘缓鐩稿簲鐨勬敞鍐岃〃椤?
 
-### 系统级别注册流程
+### 绯荤粺绾у埆娉ㄥ唽娴佺▼
 
-1. 检测是否已有管理员权限
-2. 如果已有管理员权限：
-   - 直接创建系统级目录
-   - 写入清单文件
-   - 设置适当的权限
-   - 在 Windows 上创建系统级注册表项
-3. 如果没有管理员权限：
-   - 提示用户使用管理员权限重新运行命令
-   - macOS/Linux: `sudo mcp-chrome-bridge register --system`
-   - Windows: 以管理员身份运行命令提示符
+1. 妫€娴嬫槸鍚﹀凡鏈夌鐞嗗憳鏉冮檺
+2. 濡傛灉宸叉湁绠＄悊鍛樻潈闄愶細
+   - 鐩存帴鍒涘缓绯荤粺绾х洰褰?
+   - 鍐欏叆娓呭崟鏂囦欢
+   - 璁剧疆閫傚綋鐨勬潈闄?
+   - 鍦?Windows 涓婂垱寤虹郴缁熺骇娉ㄥ唽琛ㄩ」
+3. 濡傛灉娌℃湁绠＄悊鍛樻潈闄愶細
+   - 鎻愮ず鐢ㄦ埛浣跨敤绠＄悊鍛樻潈闄愰噸鏂拌繍琛屽懡浠?
+   - macOS/Linux: `sudo h88-chrome-mcp-bridge register --system`
+   - Windows: 浠ョ鐞嗗憳韬唤杩愯鍛戒护鎻愮ず绗?
 
-## 验证安装
+## 楠岃瘉瀹夎
 
-### 验证流程图
-
-```
-验证安装
-├─ 检查清单文件
-│  ├─ 文件存在 → 检查内容是否正确
-│  └─ 文件不存在 → 重新安装
-│
-├─ 检查Chrome扩展
-│  ├─ 扩展已安装 → 检查扩展权限
-│  └─ 扩展未安装 → 安装扩展
-│
-└─ 测试连接
-   ├─ 连接成功 → 安装完成
-   └─ 连接失败 → 检查错误日志 → 参考故障排除
-```
-
-### 验证步骤
-
-安装完成后，您可以通过以下方式验证安装是否成功：
-
-1. 检查清单文件是否存在于相应目录
-   - 用户级别：检查用户目录下的清单文件
-   - 系统级别：检查系统目录下的清单文件
-   - 确认清单文件内容是否正确
-
-2. 在 Chrome 中安装对应的扩展
-   - 确保扩展已正确安装
-   - 确保扩展有 `nativeMessaging` 权限
-
-3. 尝试通过扩展连接到本地服务
-   - 使用扩展的测试功能尝试连接
-   - 检查 Chrome 的扩展日志是否有错误信息
-
-## 故障排除
-
-### 故障排除流程图
+### 楠岃瘉娴佺▼鍥?
 
 ```
-故障排除
-├─ 权限问题
-│  ├─ 检查用户权限
-│  │  ├─ 有足够权限 → 检查目录权限
-│  │  └─ 无足够权限 → 尝试系统级别安装
-│  │
-│  ├─ 执行权限问题 (macOS/Linux)
-│  │  ├─ "Permission denied" 错误
-│  │  ├─ "Native host has exited" 错误
-│  │  └─ 运行 mcp-chrome-bridge fix-permissions
-│  │
-│  └─ 尝试 mcp-chrome-bridge register --system
-│
-├─ 路径问题
-│  ├─ 检查Node.js安装 (node -v)
-│  └─ 检查全局NPM路径 (npm root -g)
-│
-├─ 注册表问题 (Windows)
-│  ├─ 检查注册表访问权限
-│  └─ 尝试手动创建注册表项
-│
-└─ 其他问题
-   ├─ 检查控制台错误信息
-   └─ 提交Issue到项目仓库
+楠岃瘉瀹夎
+鈹溾攢 妫€鏌ユ竻鍗曟枃浠?
+鈹? 鈹溾攢 鏂囦欢瀛樺湪 鈫?妫€鏌ュ唴瀹规槸鍚︽纭?
+鈹? 鈹斺攢 鏂囦欢涓嶅瓨鍦?鈫?閲嶆柊瀹夎
+鈹?
+鈹溾攢 妫€鏌hrome鎵╁睍
+鈹? 鈹溾攢 鎵╁睍宸插畨瑁?鈫?妫€鏌ユ墿灞曟潈闄?
+鈹? 鈹斺攢 鎵╁睍鏈畨瑁?鈫?瀹夎鎵╁睍
+鈹?
+鈹斺攢 娴嬭瘯杩炴帴
+   鈹溾攢 杩炴帴鎴愬姛 鈫?瀹夎瀹屾垚
+   鈹斺攢 杩炴帴澶辫触 鈫?妫€鏌ラ敊璇棩蹇?鈫?鍙傝€冩晠闅滄帓闄?
 ```
 
-### 常见问题解决步骤
+### 楠岃瘉姝ラ
 
-如果安装过程中遇到问题，请尝试以下步骤：
+瀹夎瀹屾垚鍚庯紝鎮ㄥ彲浠ラ€氳繃浠ヤ笅鏂瑰紡楠岃瘉瀹夎鏄惁鎴愬姛锛?
 
-1. 确保 Node.js 已正确安装
-   - 运行 `node -v` 和 `npm -v` 检查版本
-   - 确保 Node.js 版本 >= 20.x
+1. 妫€鏌ユ竻鍗曟枃浠舵槸鍚﹀瓨鍦ㄤ簬鐩稿簲鐩綍
+   - 鐢ㄦ埛绾у埆锛氭鏌ョ敤鎴风洰褰曚笅鐨勬竻鍗曟枃浠?
+   - 绯荤粺绾у埆锛氭鏌ョ郴缁熺洰褰曚笅鐨勬竻鍗曟枃浠?
+   - 纭娓呭崟鏂囦欢鍐呭鏄惁姝ｇ‘
 
-2. 检查是否有足够的权限创建文件和目录
-   - 用户级别安装需要对用户目录有写入权限
-   - 系统级别安装需要管理员/root权限
+2. 鍦?Chrome 涓畨瑁呭搴旂殑鎵╁睍
+   - 纭繚鎵╁睍宸叉纭畨瑁?
+   - 纭繚鎵╁睍鏈?`nativeMessaging` 鏉冮檺
 
-3. **修复执行权限问题**
+3. 灏濊瘯閫氳繃鎵╁睍杩炴帴鍒版湰鍦版湇鍔?
+   - 浣跨敤鎵╁睍鐨勬祴璇曞姛鑳藉皾璇曡繛鎺?
+   - 妫€鏌?Chrome 鐨勬墿灞曟棩蹇楁槸鍚︽湁閿欒淇℃伅
 
-   **macOS/Linux 平台**：
+## 鏁呴殰鎺掗櫎
 
-   **问题描述**：
-   - npm 安装通常会保留文件权限，但 pnpm 可能不会
-   - 可能遇到 "Permission denied" 或 "Native host has exited" 错误
-   - Chrome 扩展无法启动 native host 进程
+### 鏁呴殰鎺掗櫎娴佺▼鍥?
 
-   **解决方案**：
+```
+鏁呴殰鎺掗櫎
+鈹溾攢 鏉冮檺闂
+鈹? 鈹溾攢 妫€鏌ョ敤鎴锋潈闄?
+鈹? 鈹? 鈹溾攢 鏈夎冻澶熸潈闄?鈫?妫€鏌ョ洰褰曟潈闄?
+鈹? 鈹? 鈹斺攢 鏃犺冻澶熸潈闄?鈫?灏濊瘯绯荤粺绾у埆瀹夎
+鈹? 鈹?
+鈹? 鈹溾攢 鎵ц鏉冮檺闂 (macOS/Linux)
+鈹? 鈹? 鈹溾攢 "Permission denied" 閿欒
+鈹? 鈹? 鈹溾攢 "Native host has exited" 閿欒
+鈹? 鈹? 鈹斺攢 杩愯 h88-chrome-mcp-bridge fix-permissions
+鈹? 鈹?
+鈹? 鈹斺攢 灏濊瘯 h88-chrome-mcp-bridge register --system
+鈹?
+鈹溾攢 璺緞闂
+鈹? 鈹溾攢 妫€鏌ode.js瀹夎 (node -v)
+鈹? 鈹斺攢 妫€鏌ュ叏灞€NPM璺緞 (npm root -g)
+鈹?
+鈹溾攢 娉ㄥ唽琛ㄩ棶棰?(Windows)
+鈹? 鈹溾攢 妫€鏌ユ敞鍐岃〃璁块棶鏉冮檺
+鈹? 鈹斺攢 灏濊瘯鎵嬪姩鍒涘缓娉ㄥ唽琛ㄩ」
+鈹?
+鈹斺攢 鍏朵粬闂
+   鈹溾攢 妫€鏌ユ帶鍒跺彴閿欒淇℃伅
+   鈹斺攢 鎻愪氦Issue鍒伴」鐩粨搴?
+```
 
-   a) **使用内置修复命令（推荐）**：
+### 甯歌闂瑙ｅ喅姝ラ
+
+濡傛灉瀹夎杩囩▼涓亣鍒伴棶棰橈紝璇峰皾璇曚互涓嬫楠わ細
+
+1. 纭繚 Node.js 宸叉纭畨瑁?
+   - 杩愯 `node -v` 鍜?`npm -v` 妫€鏌ョ増鏈?
+   - 纭繚 Node.js 鐗堟湰 >= 20.x
+
+2. 妫€鏌ユ槸鍚︽湁瓒冲鐨勬潈闄愬垱寤烘枃浠跺拰鐩綍
+   - 鐢ㄦ埛绾у埆瀹夎闇€瑕佸鐢ㄦ埛鐩綍鏈夊啓鍏ユ潈闄?
+   - 绯荤粺绾у埆瀹夎闇€瑕佺鐞嗗憳/root鏉冮檺
+
+3. **淇鎵ц鏉冮檺闂**
+
+   **macOS/Linux 骞冲彴**锛?
+
+   **闂鎻忚堪**锛?
+   - npm 瀹夎閫氬父浼氫繚鐣欐枃浠舵潈闄愶紝浣?pnpm 鍙兘涓嶄細
+   - 鍙兘閬囧埌 "Permission denied" 鎴?"Native host has exited" 閿欒
+   - Chrome 鎵╁睍鏃犳硶鍚姩 native host 杩涚▼
+
+   **瑙ｅ喅鏂规**锛?
+
+   a) **浣跨敤鍐呯疆淇鍛戒护锛堟帹鑽愶級**锛?
 
    ```bash
-   mcp-chrome-bridge fix-permissions
+   h88-chrome-mcp-bridge fix-permissions
    ```
 
-   b) **运行诊断工具自动修复**：
+   b) **杩愯璇婃柇宸ュ叿鑷姩淇**锛?
 
    ```bash
-   mcp-chrome-bridge doctor --fix
+   h88-chrome-mcp-bridge doctor --fix
    ```
 
-   c) **手动设置权限**：
+   c) **鎵嬪姩璁剧疆鏉冮檺**锛?
 
    ```bash
-   # 查找安装路径
-   npm list -g mcp-chrome-bridge
-   # 或者对于 pnpm
-   pnpm list -g mcp-chrome-bridge
+   # 鏌ユ壘瀹夎璺緞
+   npm list -g h88-chrome-mcp-bridge
+   # 鎴栬€呭浜?pnpm
+   pnpm list -g h88-chrome-mcp-bridge
 
-   # 设置执行权限（替换为实际路径）
-   chmod +x /path/to/node_modules/mcp-chrome-bridge/run_host.sh
-   chmod +x /path/to/node_modules/mcp-chrome-bridge/index.js
-   chmod +x /path/to/node_modules/mcp-chrome-bridge/cli.js
+   # 璁剧疆鎵ц鏉冮檺锛堟浛鎹负瀹為檯璺緞锛?
+   chmod +x /path/to/node_modules/h88-chrome-mcp-bridge/run_host.sh
+   chmod +x /path/to/node_modules/h88-chrome-mcp-bridge/index.js
+   chmod +x /path/to/node_modules/h88-chrome-mcp-bridge/cli.js
    ```
 
-   **Windows 平台**：
+   **Windows 骞冲彴**锛?
 
-   **问题描述**：
-   - Windows 上 `.bat` 文件通常不需要执行权限，但可能遇到其他问题
-   - 文件可能被标记为只读
-   - 可能遇到 "Access denied" 或文件无法执行的错误
+   **闂鎻忚堪**锛?
+   - Windows 涓?`.bat` 鏂囦欢閫氬父涓嶉渶瑕佹墽琛屾潈闄愶紝浣嗗彲鑳介亣鍒板叾浠栭棶棰?
+   - 鏂囦欢鍙兘琚爣璁颁负鍙
+   - 鍙兘閬囧埌 "Access denied" 鎴栨枃浠舵棤娉曟墽琛岀殑閿欒
 
-   **解决方案**：
+   **瑙ｅ喅鏂规**锛?
 
-   a) **使用内置修复命令（推荐）**：
+   a) **浣跨敤鍐呯疆淇鍛戒护锛堟帹鑽愶級**锛?
 
    ```cmd
-   mcp-chrome-bridge fix-permissions
+   h88-chrome-mcp-bridge fix-permissions
    ```
 
-   b) **运行诊断工具自动修复**：
+   b) **杩愯璇婃柇宸ュ叿鑷姩淇**锛?
 
    ```cmd
-   mcp-chrome-bridge doctor --fix
+   h88-chrome-mcp-bridge doctor --fix
    ```
 
-   c) **手动检查文件属性**：
+   c) \**鎵嬪姩妫€鏌ユ枃浠跺睘鎬?*锛?
 
    ```cmd
-   # 查找安装路径
-   npm list -g mcp-chrome-bridge
+   # 鏌ユ壘瀹夎璺緞
+   npm list -g h88-chrome-mcp-bridge
 
-   # 检查文件属性（在文件资源管理器中右键 -> 属性）
-   # 确保 run_host.bat 不是只读文件
+   # 妫€鏌ユ枃浠跺睘鎬э紙鍦ㄦ枃浠惰祫婧愮鐞嗗櫒涓彸閿?-> 灞炴€э級
+   # 纭繚 run_host.bat 涓嶆槸鍙鏂囦欢
    ```
 
-   d) **重新安装并强制权限**：
+   d) \**閲嶆柊瀹夎骞跺己鍒舵潈闄?*锛?
 
    ```bash
-   # 卸载
-   npm uninstall -g mcp-chrome-bridge
-   # 或 pnpm uninstall -g mcp-chrome-bridge
+   # 鍗歌浇
+   npm uninstall -g h88-chrome-mcp-bridge
+   # 鎴?pnpm uninstall -g h88-chrome-mcp-bridge
 
-   # 重新安装
-   npm install -g mcp-chrome-bridge
-   # 或 pnpm install -g mcp-chrome-bridge
+   # 閲嶆柊瀹夎
+   npm install -g h88-chrome-mcp-bridge
+   # 鎴?pnpm install -g h88-chrome-mcp-bridge
 
-   # 如果仍有问题，运行权限修复
-   mcp-chrome-bridge fix-permissions
+   # 濡傛灉浠嶆湁闂锛岃繍琛屾潈闄愪慨澶?
+   h88-chrome-mcp-bridge fix-permissions
    ```
 
-4. 在 Windows 上，确保注册表访问没有被限制
-   - 检查是否可以访问 `HKCU\Software\Google\Chrome\NativeMessagingHosts\`
-   - 对于系统级别，检查 `HKLM\Software\Google\Chrome\NativeMessagingHosts\`
+4. 鍦?Windows 涓婏紝纭繚娉ㄥ唽琛ㄨ闂病鏈夎闄愬埗
+   - 妫€鏌ユ槸鍚﹀彲浠ヨ闂?`HKCU\Software\Google\Chrome\NativeMessagingHosts\`
+   - 瀵逛簬绯荤粺绾у埆锛屾鏌?`HKLM\Software\Google\Chrome\NativeMessagingHosts\`
 
-5. 尝试使用系统级别安装
-   - 使用 `mcp-chrome-bridge register --system` 命令
-   - 或直接使用管理员权限运行
+5. 灏濊瘯浣跨敤绯荤粺绾у埆瀹夎
+   - 浣跨敤 `h88-chrome-mcp-bridge register --system` 鍛戒护
+   - 鎴栫洿鎺ヤ娇鐢ㄧ鐞嗗憳鏉冮檺杩愯
 
-6. 检查控制台输出的错误信息
-   - 详细的错误信息通常会指出问题所在
-   - 可以添加 `--verbose` 参数获取更多日志信息
+6. 妫€鏌ユ帶鍒跺彴杈撳嚭鐨勯敊璇俊鎭?
+   - 璇︾粏鐨勯敊璇俊鎭€氬父浼氭寚鍑洪棶棰樻墍鍦?
+   - 鍙互娣诲姞 `--verbose` 鍙傛暟鑾峰彇鏇村鏃ュ織淇℃伅
 
-如果问题仍然存在，请提交 issue 到项目仓库，并附上以下信息：
+濡傛灉闂浠嶇劧瀛樺湪锛岃鎻愪氦 issue 鍒伴」鐩粨搴擄紝骞堕檮涓婁互涓嬩俊鎭細
 
-- 操作系统版本
-- Node.js 版本
-- 安装命令
-- 错误信息
-- 尝试过的解决方法
+- 鎿嶄綔绯荤粺鐗堟湰
+- Node.js 鐗堟湰
+- 瀹夎鍛戒护
+- 閿欒淇℃伅
+- 灏濊瘯杩囩殑瑙ｅ喅鏂规硶

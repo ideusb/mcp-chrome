@@ -383,7 +383,7 @@
 - **状态**: OPEN
 - **作者**: wyx66624
 - **日期**: 2025-08-31
-- **描述**: 已手动注册mcp-chrome-bridge，12306端口没有进程监听
+- **描述**: 已手动注册h88-chrome-mcp-bridge，12306端口没有进程监听
 
 #### #174 Browser in Docker + Chrome MCP: troubleshooting
 
@@ -468,7 +468,7 @@
 - **状态**: OPEN
 - **作者**: DaniloHandsOn
 - **日期**: 2025-07-10
-- **描述**: chrome-mcp-bridge命令未找到
+- **描述**: h88-chrome-mcp-bridge命令未找到
 
 #### #85 一直报错 Session termination 400
 
@@ -483,7 +483,7 @@
 - **日期**: 2025-07-06
 - **描述**: 文档缺少shared包的构建步骤
 
-#### #68 Execute mcp-chrome-bridge -v and report [ERR_REQUIRE_ESM]
+#### #68 Execute h88-chrome-mcp-bridge -v and report [ERR_REQUIRE_ESM]
 
 - **状态**: OPEN
 - **作者**: coisini6
@@ -511,7 +511,7 @@
 - **状态**: CLOSED (已有PR #195解决)
 - **作者**: gebeer
 - **日期**: 2025-09-07
-- **描述**: mcp-chrome-bridge npm包只安装到Chrome目录，不支持Chromium
+- **描述**: h88-chrome-mcp-bridge npm包只安装到Chrome目录，不支持Chromium
 
 #### #161 unexpected error: Running Status --> "Connected, Service Not Started"
 
@@ -584,7 +584,7 @@
 - **日期**: 2025-09-02
 - **描述**: Error: TransformStream is not defined
 
-#### #185 Kiro 提示 "Enabled MCP Server chrome-mcp-server must specify a command"
+#### #185 Kiro 提示 "Enabled MCP Server h88-chrome-mcp-server must specify a command"
 
 - **状态**: OPEN
 - **作者**: Chris-C1108

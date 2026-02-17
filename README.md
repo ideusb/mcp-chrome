@@ -58,12 +58,12 @@ Chrome MCP Server is a Chrome extension-based **Model Context Protocol (MCP) ser
 
 Download link: https://github.com/hangwin/mcp-chrome/releases
 
-2. **Install mcp-chrome-bridge globally**
+2. **Install h88-chrome-mcp-bridge globally**
 
 npm
 
 ```bash
-npm install -g mcp-chrome-bridge
+npm install -g h88-chrome-mcp-bridge
 ```
 
 pnpm
@@ -71,11 +71,11 @@ pnpm
 ```bash
 # Method 1: Enable scripts globally (recommended)
 pnpm config set enable-pre-post-scripts true
-pnpm install -g mcp-chrome-bridge
+pnpm install -g h88-chrome-mcp-bridge
 
 # Method 2: Manual registration (if postinstall doesn't run)
-pnpm install -g mcp-chrome-bridge
-mcp-chrome-bridge register
+pnpm install -g h88-chrome-mcp-bridge
+h88-chrome-mcp-bridge register
 ```
 
 > Note: pnpm v7+ disables postinstall scripts by default for security. The `enable-pre-post-scripts` setting controls whether pre/post install scripts run. If automatic registration fails, use the manual registration command above.
@@ -98,7 +98,7 @@ Add the following configuration to your MCP client configuration (using CherrySt
 ```json
 {
   "mcpServers": {
-    "chrome-mcp-server": {
+    "h88-chrome-mcp-server": {
       "type": "streamableHttp",
       "url": "http://127.0.0.1:12306/mcp"
     }
@@ -114,13 +114,13 @@ If your client only supports stdio connection method, please use the following a
 
 ```sh
 # npm check method
-npm list -g mcp-chrome-bridge
+npm list -g h88-chrome-mcp-bridge
 # pnpm check method
-pnpm list -g mcp-chrome-bridge
+pnpm list -g h88-chrome-mcp-bridge
 ```
 
 Assuming the command above outputs the path: /Users/xxx/Library/pnpm/global/5
-Then your final path would be: /Users/xxx/Library/pnpm/global/5/node_modules/mcp-chrome-bridge/dist/mcp/mcp-server-stdio.js
+Then your final path would be: /Users/xxx/Library/pnpm/global/5/node_modules/h88-chrome-mcp-bridge/dist/mcp/mcp-server-stdio.js
 
 2. Replace the configuration below with the final path you just obtained
 
@@ -131,7 +131,7 @@ Then your final path would be: /Users/xxx/Library/pnpm/global/5/node_modules/mcp
       "command": "npx",
       "args": [
         "node",
-        "/Users/xxx/Library/pnpm/global/5/node_modules/mcp-chrome-bridge/dist/mcp/mcp-server-stdio.js"
+        "/Users/xxx/Library/pnpm/global/5/node_modules/h88-chrome-mcp-bridge/dist/mcp/mcp-server-stdio.js"
       ]
     }
   }

@@ -5,13 +5,13 @@ import { LINKS, NATIVE_HOST } from '@/common/constants';
 import '../sidepanel/styles/agent-chat.css';
 
 const COMMANDS = {
-  npmInstall: 'npm install -g mcp-chrome-bridge',
-  pnpmInstall: 'pnpm add -g mcp-chrome-bridge',
-  yarnInstall: 'yarn global add mcp-chrome-bridge',
+  npmInstall: 'npm install -g h88-chrome-mcp-bridge',
+  pnpmInstall: 'pnpm add -g h88-chrome-mcp-bridge',
+  yarnInstall: 'yarn global add h88-chrome-mcp-bridge',
   mcpUrl: 'http://127.0.0.1:' + NATIVE_HOST.DEFAULT_PORT + '/mcp',
-  doctor: 'mcp-chrome-bridge doctor',
-  fix: 'mcp-chrome-bridge doctor --fix',
-  report: 'mcp-chrome-bridge report --copy',
+  doctor: 'h88-chrome-mcp-bridge doctor',
+  fix: 'h88-chrome-mcp-bridge doctor --fix',
+  report: 'h88-chrome-mcp-bridge report --copy',
 } as const;
 
 type CommandKey = keyof typeof COMMANDS;
@@ -106,7 +106,7 @@ async function openDocs(): Promise<void> {
         <div class="max-w-3xl mx-auto space-y-6">
           <section class="welcome-card welcome-card--primary p-6">
             <h2 class="welcome-title text-xl font-medium">
-              Install <code class="welcome-code">mcp-chrome-bridge</code>
+              Install <code class="welcome-code">h88-chrome-mcp-bridge</code>
             </h2>
             <p class="welcome-muted text-sm mt-2">
               The Chrome extension uses this local bridge to expose MCP tools to your client.

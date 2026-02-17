@@ -36,14 +36,14 @@ program
 
       if (options.browser) {
         if (options.browser.toLowerCase() === 'all') {
-          targetBrowsers = [BrowserType.CHROME, BrowserType.CHROMIUM];
+          targetBrowsers = [BrowserType.CHROME, BrowserType.CHROMIUM, BrowserType.EDGE];
           console.log(colorText('Registering for all supported browsers...', 'blue'));
         } else {
           const browserType = parseBrowserType(options.browser);
           if (!browserType) {
             console.error(
               colorText(
-                `Invalid browser: ${options.browser}. Use 'chrome', 'chromium', or 'all'`,
+                `Invalid browser: ${options.browser}. Use 'chrome', 'chromium', 'edge', or 'all'`,
                 'red',
               ),
             );
@@ -115,8 +115,8 @@ program
               'yellow',
             ),
           );
-          console.log(colorText('  1. sudo mcp-chrome-bridge register', 'yellow'));
-          console.log(colorText('  2. mcp-chrome-bridge register --system', 'yellow'));
+          console.log(colorText('  1. sudo h88-chrome-mcp-bridge register', 'yellow'));
+          console.log(colorText('  2. h88-chrome-mcp-bridge register --system', 'yellow'));
           process.exit(1);
         }
       }

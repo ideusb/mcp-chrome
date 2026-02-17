@@ -1,9 +1,9 @@
 {
-  "name": "chrome-mcp-server",
-  "description": "a chrome extension to use your own chrome as a mcp server",
-  "author": "hangye",
+  "name": "h88-chrome-mcp-server",
+  "description": "Chrome/Edge extension - use your browser as an AI MCP server",
+  "author": "h88",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "scripts": {
     "dev": "wxt",

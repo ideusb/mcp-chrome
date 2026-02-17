@@ -36,8 +36,8 @@ export const getStdioMcpServer = () => {
   }
   stdioMcpServer = new Server(
     {
-      name: 'StdioChromeMcpServer',
-      version: '1.0.0',
+      name: 'H88StdioMcpServer',
+      version: '1.0.1',
     },
     {
       capabilities: {
@@ -62,7 +62,7 @@ export const ensureMcpClient = async () => {
     }
 
     const config = loadConfig();
-    mcpClient = new Client({ name: 'Mcp Chrome Proxy', version: '1.0.0' }, { capabilities: {} });
+    mcpClient = new Client({ name: 'H88 Mcp Proxy', version: '1.0.1' }, { capabilities: {} });
     const transport = new StreamableHTTPClientTransport(new URL(config.url), {});
     await mcpClient.connect(transport);
     return mcpClient;

@@ -79,16 +79,16 @@ Write-Host "Shared package built successfully!" -ForegroundColor Green
 if ($dev) {
     Write-Host "[3/3] Starting development mode..." -ForegroundColor Yellow
     if ($firefox) {
-        pnpm --filter chrome-mcp-server dev:firefox
+        pnpm --filter h88-chrome-mcp-server dev:firefox
     } else {
-        pnpm --filter chrome-mcp-server dev
+        pnpm --filter h88-chrome-mcp-server dev
     }
 } elseif ($zip) {
     Write-Host "[3/3] Building and packaging extension..." -ForegroundColor Yellow
     if ($firefox) {
-        pnpm --filter chrome-mcp-server zip:firefox
+        pnpm --filter h88-chrome-mcp-server zip:firefox
     } else {
-        pnpm --filter chrome-mcp-server zip
+        pnpm --filter h88-chrome-mcp-server zip
     }
     if ($LASTEXITCODE -ne 0) {
         Write-Host "Failed to package extension" -ForegroundColor Red
@@ -98,9 +98,9 @@ if ($dev) {
 } else {
     Write-Host "[3/3] Building extension..." -ForegroundColor Yellow
     if ($firefox) {
-        pnpm --filter chrome-mcp-server build:firefox
+        pnpm --filter h88-chrome-mcp-server build:firefox
     } else {
-        pnpm --filter chrome-mcp-server build
+        pnpm --filter h88-chrome-mcp-server build
     }
     if ($LASTEXITCODE -ne 0) {
         Write-Host "Failed to build extension" -ForegroundColor Red

@@ -28,8 +28,8 @@
 1. **Fork 并克隆仓库**
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/chrome-mcp-server.git
-cd chrome-mcp-server
+git clone https://github.com/YOUR_USERNAME/h88-chrome-mcp-server.git
+cd h88-chrome-mcp-server
 ```
 
 2. **安装依赖**
@@ -52,7 +52,7 @@ npm run dev
 ## 🏗️ 项目结构
 
 ```
-chrome-mcp-server/
+h88-chrome-mcp-server/
 ├── app/
 │   ├── chrome-extension/     # Chrome 扩展 (WXT + Vue 3)
 │   │   ├── entrypoints/      # 后台脚本、弹窗、内容脚本
