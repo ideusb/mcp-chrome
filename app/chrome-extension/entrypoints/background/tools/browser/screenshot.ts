@@ -145,11 +145,24 @@ class ScreenshotTool extends BaseBrowserToolExecutor {
     let originalScroll: { x: number; y: number } | null = null;
     let didPreparePage = false;
     let pageDetails: ScreenshotPageDetails | undefined;
+    // Track if we temporarily activated the target tab, and which tab was active before,
+    // so we can restore the original active tab in the finally block.
+    let previousActiveTabId: number | undefined;
+
+    // Determine if the target tab is currently the active tab in its window.
+    // captureVisibleTab always captures the *active* tab of a window, regardless of the tabId
+    // we resolve. When the target tab is NOT active, we must either use CDP (which can capture
+    // any tab regardless of activation state) or temporarily activate the tab before capturing.
+    const isTargetTabActive = tab.active === true;
 
     try {
       const background = args.background === true;
-      // CDP path: background=true with simple viewport capture (no fullPage, no selector)
-      const canUseCdpCapture = background && !fullPage && !selector;
+      // Use CDP for viewport-only captures when:
+      //   (a) caller explicitly requested background capture, OR
+      //   (b) the target tab is not currently the active tab (so captureVisibleTab would grab the wrong tab)
+      // We skip CDP for fullPage/selector because those paths need the helper content script anyway
+      // and we handle activation there via the activateForCapture helper below.
+      const canUseCdpCapture = (background || !isTargetTabActive) && !fullPage && !selector;
 
       // === Path 1: CDP viewport capture (no content script needed) ===
       if (canUseCdpCapture) {
@@ -191,6 +204,31 @@ class ScreenshotTool extends BaseBrowserToolExecutor {
         await this.injectContentScript(tab.id!, ['inject-scripts/screenshot-helper.js']);
         await new Promise((resolve) => setTimeout(resolve, SCREENSHOT_CONSTANTS.SCRIPT_INIT_DELAY));
 
+        // If the target tab is not the active tab in its window, we must activate it before
+        // using captureVisibleTab (which always captures the active tab of the window).
+        // Record the previously active tab so we can restore focus in the finally block.
+        if (!isTargetTabActive && typeof tab.id === 'number' && typeof tab.windowId === 'number') {
+          try {
+            const [currentActive] = await chrome.tabs.query({
+              active: true,
+              windowId: tab.windowId,
+            });
+            if (currentActive?.id !== undefined && currentActive.id !== tab.id) {
+              previousActiveTabId = currentActive.id;
+            }
+            await chrome.tabs.update(tab.id, { active: true });
+            // Brief wait for the browser to render the newly activated tab
+            await new Promise((resolve) =>
+              setTimeout(resolve, SCREENSHOT_CONSTANTS.SCROLL_DELAY_MS),
+            );
+          } catch (activateErr) {
+            console.warn(
+              'Could not activate target tab for capture, screenshot may be inaccurate:',
+              activateErr,
+            );
+          }
+        }
+
         // Prepare page (hide scrollbars, handle fixed elements)
         const prepareResp = await this.sendMessageToTab(tab.id!, {
           action: TOOL_MESSAGE_TYPES.SCREENSHOT_PREPARE_PAGE_FOR_CAPTURE,
@@ -212,7 +250,7 @@ class ScreenshotTool extends BaseBrowserToolExecutor {
 
         if (fullPage) {
           this.logInfo('Capturing full page...');
-          finalImageDataUrl = await this._captureFullPage(tab.id!, args, pageDetails);
+          finalImageDataUrl = await this._captureFullPage(tab.id!, tab.windowId!, args, pageDetails);
           // Compute final CSS size
           if (args.width && args.height) {
             finalImageWidthCss = args.width;
@@ -233,6 +271,7 @@ class ScreenshotTool extends BaseBrowserToolExecutor {
           this.logInfo(`Capturing element: ${selector}`);
           finalImageDataUrl = await this._captureElement(
             tab.id!,
+            tab.windowId!,
             args,
             pageDetails.devicePixelRatio,
           );
@@ -363,6 +402,15 @@ class ScreenshotTool extends BaseBrowserToolExecutor {
           console.warn('Failed to reset page, tab might have closed:', err);
         }
       }
+
+      // 4. Restore the previously active tab if we had to temporarily activate the target tab
+      if (typeof previousActiveTabId === 'number') {
+        try {
+          await chrome.tabs.update(previousActiveTabId, { active: true });
+        } catch (err) {
+          console.warn('Failed to restore previously active tab:', err);
+        }
+      }
     }
 
     this.logInfo('Screenshot completed!');
@@ -397,6 +445,7 @@ class ScreenshotTool extends BaseBrowserToolExecutor {
    */
   async _captureElement(
     tabId: number,
+    windowId: number,
     options: ScreenshotToolParams,
     pageDpr: number,
   ): Promise<string> {
@@ -419,7 +468,8 @@ class ScreenshotTool extends BaseBrowserToolExecutor {
     // Small delay to ensure element is fully rendered after scrollIntoView
     await new Promise((resolve) => setTimeout(resolve, SCREENSHOT_CONSTANTS.SCRIPT_INIT_DELAY));
 
-    const visibleCaptureDataUrl = await chrome.tabs.captureVisibleTab({ format: 'png' });
+    // Pass windowId so captureVisibleTab targets the correct window's active tab
+    const visibleCaptureDataUrl = await chrome.tabs.captureVisibleTab(windowId, { format: 'png' });
     if (!visibleCaptureDataUrl) {
       throw new Error('Failed to capture visible tab for element cropping');
     }
@@ -439,6 +489,7 @@ class ScreenshotTool extends BaseBrowserToolExecutor {
    */
   async _captureFullPage(
     tabId: number,
+    windowId: number,
     options: ScreenshotToolParams,
     initialPageDetails: any,
   ): Promise<string> {
@@ -490,7 +541,8 @@ class ScreenshotTool extends BaseBrowserToolExecutor {
         setTimeout(resolve, SCREENSHOT_CONSTANTS.CAPTURE_STITCH_DELAY_MS),
       );
 
-      const dataUrl = await chrome.tabs.captureVisibleTab({ format: 'png' });
+      // Pass windowId so captureVisibleTab targets the correct window's active tab
+      const dataUrl = await chrome.tabs.captureVisibleTab(windowId, { format: 'png' });
       if (!dataUrl) throw new Error('captureVisibleTab returned empty during full page capture');
 
       const yOffsetPx = currentScrollYCss * dpr;

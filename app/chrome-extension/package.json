@@ -3,7 +3,7 @@
   "description": "Chrome/Edge extension - use your browser as an AI MCP server",
   "author": "h88",
   "private": true,
-  "version": "1.10.0",
+  "version": "1.10.1",
   "type": "module",
   "scripts": {
     "dev": "wxt",
