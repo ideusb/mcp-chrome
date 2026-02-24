@@ -22,7 +22,7 @@ import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { randomUUID } from 'node:crypto';
 import { isInitializeRequest } from '@modelcontextprotocol/sdk/types.js';
-import { getMcpServer } from '../mcp/mcp-server';
+import { createMcpServer } from '../mcp/mcp-server';
 import { AgentStreamManager } from '../agent/stream-manager';
 import { AgentChatService } from '../agent/chat-service';
 import { CodexEngine } from '../agent/engines/codex';
@@ -181,7 +181,7 @@ export class Server {
           this.transportsMap.delete(transport.sessionId);
         });
 
-        const server = getMcpServer();
+        const server = createMcpServer();
         await server.connect(transport);
 
         reply.raw.write(':\n\n');
@@ -217,12 +217,21 @@ export class Server {
         sessionId || '',
       ) as StreamableHTTPServerTransport;
 
-      if (transport) {
-        // Transport found, proceed
-      } else if (isInitializeRequest(request.body)) {
-        // Allow initialize requests even if they carry a stale session ID.
-        // This handles the case where the server restarted and the client
-        // retries with the old session ID header still attached.
+      const isInit = isInitializeRequest(request.body);
+
+      if (isInit) {
+        // Initialize request: always create a fresh transport.
+        // Clean up ALL existing transports — this is a single-user server,
+        // so a new initialize means any previous sessions are stale.
+        for (const [existingId, existingTransport] of this.transportsMap.entries()) {
+          try {
+            await (existingTransport as StreamableHTTPServerTransport).close();
+          } catch {
+            // Ignore close errors
+          }
+          this.transportsMap.delete(existingId);
+        }
+
         const newSessionId = randomUUID();
         transport = new StreamableHTTPServerTransport({
           sessionIdGenerator: () => newSessionId,
@@ -238,9 +247,14 @@ export class Server {
             this.transportsMap.delete(transport.sessionId);
           }
         };
-        await getMcpServer().connect(transport);
+        // Each session needs its own MCP Server instance because the SDK's
+        // Protocol base class binds one-to-one with a transport.
+        const mcpServerInstance = createMcpServer();
+        await mcpServerInstance.connect(transport);
+      } else if (transport) {
+        // Existing session with valid transport — proceed
       } else {
-        // Not an initialize request and no valid session - return 400 with a helpful message
+        // Not an initialize request and no valid session
         reply.code(HTTP_STATUS.BAD_REQUEST).send({
           error: ERROR_MESSAGES.INVALID_MCP_REQUEST,
           hint: 'Session not found. The server may have restarted. Please send a new initialize request without a session ID to create a new session.',
