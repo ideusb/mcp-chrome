@@ -3,6 +3,8 @@ import { Server } from './server';
 import { v4 as uuidv4 } from 'uuid';
 import { NativeMessageType } from 'chrome-mcp-shared';
 import { TIMEOUTS } from './constant';
+import { COMMAND_NAME, EXTENSION_ID, getAllExtensionIds, saveExtraExtensionIds } from './scripts/constant';
+import { updateAllBrowserManifests } from './scripts/utils';
 import fileHandler from './file-handler';
 
 interface PendingRequest {
@@ -120,7 +122,7 @@ export class NativeMessagingHost {
     try {
       switch (message.type) {
         case NativeMessageType.START:
-          await this.startServer(message.payload?.port || 12306);
+          await this.handleStartWithExtensionId(message.payload);
           break;
         case NativeMessageType.STOP:
           await this.stopServer();
@@ -213,6 +215,65 @@ export class NativeMessagingHost {
         requestId: requestId, // <--- Key: include request ID
       });
     });
+  }
+
+  /**
+   * Handle START message with optional extensionId.
+   * If the connecting extension's ID is not in the known list:
+   * 1. Persist the new ID to user data directory
+   * 2. Hot-patch all browser manifest files on disk to include the new ID
+   * 3. Send reconnect_needed so the extension disconnects and reconnects
+   *    (the second connection will succeed because the manifest is updated)
+   */
+  private async handleStartWithExtensionId(payload: any): Promise<void> {
+    const port = payload?.port || 12306;
+    const extensionId: string | undefined = payload?.extensionId;
+
+    if (extensionId && typeof extensionId === 'string' && /^[a-z]{32}$/.test(extensionId)) {
+      const knownIds = getAllExtensionIds();
+      if (!knownIds.includes(extensionId)) {
+        // 1. Persist the new extension ID
+        try {
+          saveExtraExtensionIds([extensionId]);
+        } catch {
+          // Non-fatal
+        }
+
+        // 2. Hot-patch all browser manifest files on disk
+        let manifestUpdated = false;
+        try {
+          manifestUpdated = updateAllBrowserManifests(extensionId);
+        } catch {
+          // Non-fatal
+        }
+
+        if (manifestUpdated) {
+          // 3. Tell the extension to disconnect and reconnect.
+          //    The browser will re-read the manifest on the next connectNative() call,
+          //    and the new ID will be in allowed_origins.
+          this.sendMessage({
+            type: 'reconnect_needed',
+            payload: {
+              extensionId,
+              reason: 'Extension ID was not in allowed_origins. Manifests have been updated. Please reconnect.',
+            },
+          });
+          // Don't start the server yet — the extension will reconnect and send START again.
+          return;
+        }
+
+        // Manifest update failed (e.g. no manifest files found) — try starting anyway
+        this.sendMessage({
+          type: 'extension_id_registered',
+          payload: {
+            extensionId,
+            message: `Extension ID ${extensionId} saved but manifest update failed. Run "${COMMAND_NAME} register --detect" to update manifests.`,
+          },
+        });
+      }
+    }
+
+    await this.startServer(port);
   }
 
   /**

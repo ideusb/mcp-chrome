@@ -34,10 +34,11 @@ export const getStdioMcpServer = () => {
   if (stdioMcpServer) {
     return stdioMcpServer;
   }
+  const pkgVersion = require('../../package.json').version || '1.0.0';
   stdioMcpServer = new Server(
     {
       name: 'H88StdioMcpServer',
-      version: '1.0.1',
+      version: pkgVersion,
     },
     {
       capabilities: {
@@ -62,7 +63,8 @@ export const ensureMcpClient = async () => {
     }
 
     const config = loadConfig();
-    mcpClient = new Client({ name: 'H88 Mcp Proxy', version: '1.0.1' }, { capabilities: {} });
+    const clientVersion = require('../../package.json').version || '1.0.0';
+    mcpClient = new Client({ name: 'H88 Mcp Proxy', version: clientVersion }, { capabilities: {} });
     const transport = new StreamableHTTPClientTransport(new URL(config.url), {});
     await mcpClient.connect(transport);
     return mcpClient;

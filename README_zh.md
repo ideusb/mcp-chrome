@@ -310,10 +310,11 @@ https://github.com/user-attachments/assets/83de4008-bb7e-494d-9b0f-98325cfea592
 # Hrg
 
 ## chrome/edge扩展本地编译：
-
+版本号定义：app\chrome-extension\package.json
 .\build-extension.ps1 -zip
+自行安装id：h88-chrome-mcp-bridge add-extension-id akomdmjelkfncmcopicfhpcjfnnakafk
 
 ## npm编译发布：
-
+版本号定义：app\native-server\package.json
 先登录 npm 官方源：npm login --registry https://registry.npmjs.org
 再运行发布脚本：publish-npm.ps1

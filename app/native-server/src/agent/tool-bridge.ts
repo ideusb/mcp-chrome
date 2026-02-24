@@ -43,10 +43,11 @@ export class AgentToolBridge {
       options.mcpUrl || `http://127.0.0.1:${process.env.MCP_HTTP_PORT || NATIVE_SERVER_PORT}/mcp`;
 
     this.transport = new StreamableHTTPClientTransport(new URL(url));
+    const pkgVersion = require('../../package.json').version || '1.0.0';
     this.client = new Client(
       {
         name: 'chrome-mcp-agent-bridge',
-        version: '1.0.0',
+        version: pkgVersion,
       },
       {},
     );

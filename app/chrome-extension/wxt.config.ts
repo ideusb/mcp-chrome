@@ -10,7 +10,16 @@ import IconsResolver from 'unplugin-icons/resolver';
 config({ path: resolve(process.cwd(), '.env') });
 config({ path: resolve(process.cwd(), '.env.local') });
 
-const CHROME_EXTENSION_KEY = process.env.CHROME_EXTENSION_KEY;
+// Default built-in key ensures a deterministic extension ID across all builds.
+// Users who have the official Chrome Web Store key can override via CHROME_EXTENSION_KEY env var.
+// The ID produced by this default key is: qaywfeywxiflvbgd
+const DEFAULT_EXTENSION_KEY =
+  'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA2JPuHhrnVKVQXhfh7NtlpvQnuUDHcdet7MW7' +
+  'mRqTzha6wY9kwdk+bLSFrvYnZ1X69wDX3m4+bHeDGGVq7wGqa+utgpe+5yT1FjhbtH7go/S+v06BKuP1' +
+  '3kZjSCOdLQGTWzE5iSLZ+rkWzZBx5ejVtWx+CCa1TXlZAh9Qa3WrJ1CDJw/NnWd5ydHOJ+l39mGgEWf' +
+  '7Tslt+91zzr1q4iguS9Fo/mESlRIonPlOnQtYBZyGTDm69Ux9v6BbJCiSed/UWPbaNiFDHkyrmdpz/qV' +
+  'vIiWfyLk4urXvJ5aDrnXfChpVcDFNxyFAQSviZmpuvRgrNxTYp2PjyONCoHZFkFHqrwIDAQAB';
+const CHROME_EXTENSION_KEY = process.env.CHROME_EXTENSION_KEY || DEFAULT_EXTENSION_KEY;
 // Detect dev mode early for manifest-level switches
 const IS_DEV = process.env.NODE_ENV !== 'production' && process.env.MODE !== 'production';
 
@@ -32,7 +41,7 @@ export default defineConfig({
     // ],
   },
   manifest: {
-    // Use environment variable for the key, fallback to undefined if not set
+    // Environment variable overrides the default key, or use the built-in default
     key: CHROME_EXTENSION_KEY,
     default_locale: 'zh_CN',
     name: '__MSG_extensionName__',

@@ -219,7 +219,10 @@ export class Server {
 
       if (transport) {
         // Transport found, proceed
-      } else if (!sessionId && isInitializeRequest(request.body)) {
+      } else if (isInitializeRequest(request.body)) {
+        // Allow initialize requests even if they carry a stale session ID.
+        // This handles the case where the server restarted and the client
+        // retries with the old session ID header still attached.
         const newSessionId = randomUUID();
         transport = new StreamableHTTPServerTransport({
           sessionIdGenerator: () => newSessionId,
@@ -237,7 +240,11 @@ export class Server {
         };
         await getMcpServer().connect(transport);
       } else {
-        reply.code(HTTP_STATUS.BAD_REQUEST).send({ error: ERROR_MESSAGES.INVALID_MCP_REQUEST });
+        // Not an initialize request and no valid session - return 400 with a helpful message
+        reply.code(HTTP_STATUS.BAD_REQUEST).send({
+          error: ERROR_MESSAGES.INVALID_MCP_REQUEST,
+          hint: 'Session not found. The server may have restarted. Please send a new initialize request without a session ID to create a new session.',
+        });
         return;
       }
 

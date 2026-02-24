@@ -1,6 +1,6 @@
 {
   "name": "h88-chrome-mcp-bridge",
-  "version": "1.0.2",
+  "version": "1.0.5",
   "description": "Chrome/Edge Native-Messaging host for MCP (Node)",
   "main": "dist/index.js",
   "bin": {

@@ -17,6 +17,13 @@ const RECONNECT_MAX_DELAY_MS = 60_000;
 const RECONNECT_MAX_FAST_ATTEMPTS = 8;
 const RECONNECT_COOLDOWN_DELAY_MS = 5 * 60_000;
 
+/**
+ * Alarm name used as a periodic heartbeat to guarantee reconnection
+ * even after the Service Worker has been terminated and restarted.
+ * setTimeout timers are lost when SW dies; chrome.alarms survive.
+ */
+const RECONNECT_ALARM_NAME = 'native-host-reconnect-heartbeat';
+
 // ==================== Auto-connect State ====================
 
 let keepaliveRelease: (() => void) | null = null;
@@ -406,6 +413,20 @@ export function connectNativeHost(port: number = NATIVE_HOST.DEFAULT_PORT): bool
             payload: { status: 'error', error: error?.message || String(error) },
           });
         }
+      } else if (message.type === 'reconnect_needed') {
+        // Native host detected that our extension ID was not in the manifest's
+        // allowed_origins. It has already updated the manifest files on disk.
+        // We need to disconnect and reconnect so the browser re-reads the manifest.
+        console.log(`${LOG_PREFIX} Received reconnect_needed: ${message.payload?.reason}`);
+        if (nativePort) {
+          try { nativePort.disconnect(); } catch { /* ignore */ }
+          nativePort = null;
+        }
+        // Wait a short moment for the browser to release the native host process,
+        // then reconnect. The updated manifest will now include our extension ID.
+        setTimeout(() => {
+          void ensureNativeConnected('reconnect_after_manifest_update').catch(() => {});
+        }, 1500);
       } else if (message.type === NativeMessageType.SERVER_STARTED) {
         const port = message.payload?.port;
         currentServerStatus = {
@@ -453,7 +474,13 @@ export function connectNativeHost(port: number = NATIVE_HOST.DEFAULT_PORT): bool
       scheduleReconnect('native_port_disconnected');
     });
 
-    nativePort.postMessage({ type: NativeMessageType.START, payload: { port } });
+    nativePort.postMessage({
+      type: NativeMessageType.START,
+      payload: {
+        port,
+        extensionId: chrome.runtime.id,
+      },
+    });
     // Note: Don't reset reconnect state here. Wait for SERVER_STARTED confirmation.
     // Chrome may return a Port but disconnect immediately if native host is missing.
     return true;
@@ -488,6 +515,23 @@ export const initNativeHostListener = () => {
   // Auto-connect on extension install/update
   chrome.runtime.onInstalled.addListener(() => {
     void ensureNativeConnected('onInstalled').catch(() => {});
+  });
+
+  // ==================== Alarm-based Heartbeat ====================
+  // chrome.alarms survive Service Worker termination, unlike setTimeout.
+  // This ensures that after a system restart or long SW sleep, we still
+  // attempt to reconnect to the native host periodically.
+  chrome.alarms.create(RECONNECT_ALARM_NAME, {
+    delayInMinutes: 0.5, // First check 30 seconds after SW starts
+    periodInMinutes: 1,  // Then every 1 minute
+  });
+
+  chrome.alarms.onAlarm.addListener((alarm) => {
+    if (alarm.name !== RECONNECT_ALARM_NAME) return;
+    if (nativePort) return; // Already connected, nothing to do
+    if (manualDisconnect) return;
+    console.debug(`${LOG_PREFIX} Alarm heartbeat: attempting reconnect`);
+    void ensureNativeConnected('alarm_heartbeat').catch(() => {});
   });
 
   chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
@@ -525,6 +569,12 @@ export const initNativeHostListener = () => {
         // Explicit user connect: re-enable auto-connect
         await setNativeAutoConnectEnabled(true);
 
+        // Restore the alarm-based heartbeat
+        chrome.alarms.create(RECONNECT_ALARM_NAME, {
+          delayInMinutes: 0.5,
+          periodInMinutes: 1,
+        });
+
         if (normalized) {
           // Best-effort: persist preferred port
           try {
@@ -559,6 +609,9 @@ export const initNativeHostListener = () => {
         clearReconnectTimer();
         reconnectAttempts = 0;
         syncKeepaliveHold();
+
+        // Stop the alarm-based heartbeat since user explicitly disconnected
+        chrome.alarms.clear(RECONNECT_ALARM_NAME).catch(() => {});
 
         if (nativePort) {
           // Only set manualDisconnect if we actually have a port to disconnect.

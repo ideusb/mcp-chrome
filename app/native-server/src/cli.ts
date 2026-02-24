@@ -11,6 +11,7 @@ import {
   writeNodePathFile,
 } from './scripts/utils';
 import { BrowserType, parseBrowserType, detectInstalledBrowsers } from './scripts/browser-config';
+import { saveExtraExtensionIds, getAllExtensionIds } from './scripts/constant';
 import { runDoctor } from './scripts/doctor';
 import { runReport } from './scripts/report';
 
@@ -24,12 +25,24 @@ program
   .description('Register Native Messaging host')
   .option('-f, --force', 'Force re-registration')
   .option('-s, --system', 'Use system-level installation (requires administrator/sudo privileges)')
-  .option('-b, --browser <browser>', 'Register for specific browser (chrome, chromium, or all)')
+  .option('-b, --browser <browser>', 'Register for specific browser (chrome, chromium, edge, or all)')
   .option('-d, --detect', 'Auto-detect installed browsers')
+  .option('-e, --extension-id <ids>', 'Additional extension ID(s) to allow, comma-separated')
   .action(async (options) => {
     try {
       // Write Node.js path for run_host scripts
       writeNodePathFile(__dirname);
+
+      // Handle extra extension IDs
+      let extraIds: string[] = [];
+      if (options.extensionId) {
+        extraIds = options.extensionId.split(',').map((s: string) => s.trim()).filter(Boolean);
+        if (extraIds.length > 0) {
+          // Persist extra IDs for future registrations
+          saveExtraExtensionIds(extraIds);
+          console.log(colorText(`Added extension ID(s): ${extraIds.join(', ')}`, 'blue'));
+        }
+      }
 
       // Determine which browsers to register
       let targetBrowsers: BrowserType[] | undefined;
@@ -98,7 +111,7 @@ program
       } else {
         // Regular user-level installation
         console.log(colorText('Registering user-level Native Messaging host...', 'blue'));
-        const success = await tryRegisterUserLevelHost(targetBrowsers);
+        const success = await tryRegisterUserLevelHost(targetBrowsers, extraIds);
 
         if (success) {
           console.log(colorText('Native Messaging host registered successfully!', 'green'));
@@ -223,6 +236,59 @@ program
       process.exit(exitCode);
     } catch (error: any) {
       console.error(colorText(`Report failed: ${error.message}`, 'red'));
+      process.exit(1);
+    }
+  });
+
+// Add extension ID and re-register
+program
+  .command('add-extension-id <extensionId>')
+  .description('Add an extension ID to the allowed list and re-register all detected browsers')
+  .option('-b, --browser <browser>', 'Register for specific browser (chrome, chromium, edge, or all)')
+  .action(async (extensionId: string, options: any) => {
+    try {
+      const trimmed = extensionId.trim();
+      if (!/^[a-z]{32}$/.test(trimmed)) {
+        console.error(colorText(
+          `Invalid extension ID: "${extensionId}". Must be exactly 32 lowercase letters.`,
+          'red',
+        ));
+        console.log(colorText(
+          'You can find the extension ID in your browser\'s extension management page (edge://extensions or chrome://extensions).',
+          'blue',
+        ));
+        process.exit(1);
+      }
+
+      // Save the new ID
+      saveExtraExtensionIds([trimmed]);
+      console.log(colorText(`✓ Extension ID ${trimmed} added to allowed list`, 'green'));
+
+      // Show all known IDs
+      const allIds = getAllExtensionIds();
+      console.log(colorText(`\nAll allowed extension IDs (${allIds.length}):`, 'blue'));
+      allIds.forEach(id => {
+        const label = id === 'ilhlbjgpmlkddakmglmiglgpgmjhmjeh' ? ' (official)' : '';
+        console.log(`  - ${id}${label}`);
+      });
+
+      // Re-register
+      writeNodePathFile(__dirname);
+      let targetBrowsers: BrowserType[] | undefined;
+      if (options.browser) {
+        const bt = parseBrowserType(options.browser);
+        targetBrowsers = bt ? [bt] : [BrowserType.CHROME, BrowserType.CHROMIUM, BrowserType.EDGE];
+      }
+      const success = await tryRegisterUserLevelHost(targetBrowsers);
+      if (success) {
+        console.log(colorText('\n✓ Re-registered with updated extension IDs!', 'green'));
+        console.log(colorText('Please restart your browser or reload the extension.', 'blue'));
+      } else {
+        console.error(colorText('\n✗ Re-registration failed', 'red'));
+        process.exit(1);
+      }
+    } catch (error: any) {
+      console.error(colorText(`Failed: ${error.message}`, 'red'));
       process.exit(1);
     }
   });

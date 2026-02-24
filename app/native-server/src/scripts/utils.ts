@@ -3,7 +3,7 @@ import path from 'path';
 import os from 'os';
 import { execSync } from 'child_process';
 import { promisify } from 'util';
-import { COMMAND_NAME, DESCRIPTION, EXTENSION_ID, HOST_NAME } from './constant';
+import { COMMAND_NAME, DESCRIPTION, EXTENSION_ID, HOST_NAME, getAllExtensionIds } from './constant';
 import { BrowserType, getBrowserConfig, detectInstalledBrowsers } from './browser-config';
 
 export const access = promisify(fs.access);
@@ -234,17 +234,20 @@ async function ensureWindowsFilePermissions(packageDistDir: string): Promise<voi
 }
 
 /**
- * Create Native Messaging host manifest content
+ * Create Native Messaging host manifest content.
+ * Includes all known extension IDs in allowed_origins.
+ * @param extraExtensionIds - Additional extension IDs to include beyond the defaults
  */
-export async function createManifestContent(): Promise<any> {
+export async function createManifestContent(extraExtensionIds?: string[]): Promise<any> {
   const mainPath = await getMainPath();
+  const allIds = getAllExtensionIds(extraExtensionIds);
 
   return {
     name: HOST_NAME,
     description: DESCRIPTION,
     path: mainPath, // Node.js可执行文件路径
     type: 'stdio',
-    allowed_origins: [`chrome-extension://${EXTENSION_ID}/`],
+    allowed_origins: allIds.map(id => `chrome-extension://${id}/`),
   };
 }
 
@@ -287,19 +290,21 @@ function verifyWindowsRegistryEntry(registryKey: string, expectedPath: string): 
  * as it ensures the Node.js path is captured before registration.
  *
  * @param browsers - Optional list of browsers to register for
+ * @param extraExtensionIds - Additional extension IDs to include in allowed_origins
  * @returns true if at least one browser was registered successfully
  */
 export async function registerUserLevelHostWithNodePath(
   browsers?: BrowserType[],
+  extraExtensionIds?: string[],
 ): Promise<boolean> {
   writeNodePathFile(path.join(__dirname, '..'));
-  return tryRegisterUserLevelHost(browsers);
+  return tryRegisterUserLevelHost(browsers, extraExtensionIds);
 }
 
 /**
  * 尝试注册用户级别的Native Messaging主机
  */
-export async function tryRegisterUserLevelHost(targetBrowsers?: BrowserType[]): Promise<boolean> {
+export async function tryRegisterUserLevelHost(targetBrowsers?: BrowserType[], extraExtensionIds?: string[]): Promise<boolean> {
   try {
     console.log(colorText('Attempting to register user-level Native Messaging host...', 'blue'));
 
@@ -322,7 +327,10 @@ export async function tryRegisterUserLevelHost(targetBrowsers?: BrowserType[]): 
     }
 
     // 3. 创建清单内容
-    const manifest = await createManifestContent();
+    const manifest = await createManifestContent(extraExtensionIds);
+
+    // Log the allowed origins for user visibility
+    console.log(colorText(`Allowed extension origins: ${(manifest.allowed_origins as string[]).join(', ')}`, 'blue'));
 
     let successCount = 0;
     const results: { browser: string; success: boolean; error?: string }[] = [];
@@ -535,4 +543,55 @@ export async function registerWithElevatedPermissions(): Promise<void> {
     console.error(colorText(`注册失败: ${error.message}`, 'red'));
     throw error;
   }
+}
+
+/**
+ * Hot-patch all existing browser manifest files on disk to include
+ * the given extension ID in `allowed_origins`.
+ *
+ * This is called at runtime by the native messaging host when an
+ * unknown extension connects. It directly edits the JSON files that
+ * were previously written by `tryRegisterUserLevelHost`, preserving
+ * all other fields (name, description, path, type).
+ *
+ * @returns true if at least one manifest was updated
+ */
+export function updateAllBrowserManifests(newExtensionId: string): boolean {
+  const origin = `chrome-extension://${newExtensionId}/`;
+  const browsers = detectInstalledBrowsers();
+  if (browsers.length === 0) {
+    // Fallback: try all known browsers
+    browsers.push(BrowserType.CHROME, BrowserType.CHROMIUM, BrowserType.EDGE);
+  }
+
+  let updated = false;
+
+  for (const browser of browsers) {
+    const config = getBrowserConfig(browser);
+    // Check both user-level and system-level manifest paths
+    for (const manifestPath of [config.userManifestPath, config.systemManifestPath]) {
+      try {
+        if (!fs.existsSync(manifestPath)) continue;
+
+        const raw = fs.readFileSync(manifestPath, 'utf8');
+        const manifest = JSON.parse(raw);
+
+        if (!Array.isArray(manifest.allowed_origins)) {
+          manifest.allowed_origins = [];
+        }
+
+        if (manifest.allowed_origins.includes(origin)) {
+          continue; // Already present
+        }
+
+        manifest.allowed_origins.push(origin);
+        fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2), 'utf8');
+        updated = true;
+      } catch {
+        // Ignore individual manifest errors (e.g. permission denied on system-level)
+      }
+    }
+  }
+
+  return updated;
 }

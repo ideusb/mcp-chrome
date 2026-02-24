@@ -7,10 +7,11 @@ export const getMcpServer = () => {
   if (mcpServer) {
     return mcpServer;
   }
+  const pkgVersion = require('../../package.json').version || '1.0.0';
   mcpServer = new Server(
     {
       name: 'H88ChromeMcpServer',
-      version: '1.0.1',
+      version: pkgVersion,
     },
     {
       capabilities: {
